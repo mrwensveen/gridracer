@@ -1,3 +1,7 @@
+<!--
+   gridracer.html
+   see license.txt for (c) and licensing information
+-->
 <!DOCTYPE html>
 <html>
 
@@ -109,7 +113,7 @@
 						duration: 500,
 						step: function(now, fx) {
 							// Clear the path
-							ctx.clearRect(0 - evt.cell.width / 2, evt.cell.height / 2, evt.cell.width, 0 - (dist + evt.cell.height));
+							ctx.clearRect(0 - evt.cell.width / 2, evt.cell.height / 2, evt.cell.width, 0 - (now + evt.cell.height));
 							ctx.drawImage(player1.img, 0 - evt.cell.width / 2, 0 - now - evt.cell.height / 2);
 						},
 						complete: function() {

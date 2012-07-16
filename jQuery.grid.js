@@ -1,5 +1,6 @@
 /*
  * jQuery.grid.js
+ * see license.txt for (c) and licensing information
  */
 
 function getMousePos(canvas, evt){
