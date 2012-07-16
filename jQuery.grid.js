@@ -46,7 +46,7 @@ function getMousePos(canvas, evt){
 				// Create a canvas for each layer
 				$this.html('');
 				for(var l = 0; l < settings.layers; l++) {
-					$this.append('<canvas class="layer_"' + l + '" width="' + settings.width + '" height="' + settings.height + '" style="position: absolute;"></canvas>');
+					$this.append('<canvas class="layer_' + l + '" width="' + settings.width + '" height="' + settings.height + '" style="position: absolute;"></canvas>');
 				}
 				
 				var layers = $('canvas', $this);
