@@ -6,8 +6,10 @@
 <html>
 
 <head>
-	<title>gridracers</title>
+	<title>Gridracer</title>
 	<script type="text/javascript" src="jquery-1.7.2.min.js"></script>
+	<script type="text/javascript" src="jsjac.js"></script>
+	<script type="text/javascript" src="jsjac.simpleclient.js"></script>
 	<script type="text/javascript" src="jQuery.grid.js"></script>
 	<script type="text/javascript">
 		var track = {
@@ -135,6 +137,23 @@
 			});
 		});
 	</script>
+	<script type="text/javascript">
+		var connectionArgs = {
+			httpbase: 'http://localhost:5280/http-bind/',
+			timerval: 2000,
+			backend: 'binding'
+		}
+
+		var loginArgs = {
+			domain: 'cerebro.forsite.dk',
+			username: 'test2',
+			resource: 'Gridracer',
+			pass: 'test',
+			register: false
+		}
+		
+		var connection = connectAndLogin(connectionArgs, loginArgs);
+   	</script>
 </head>
 
 <body>
