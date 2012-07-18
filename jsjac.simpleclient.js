@@ -4,6 +4,8 @@
  */
 
 function handleMessage(con, packet) {
+	console.log('handleMessage');
+	console.log(packet.xml());
 	//~ var html = '';
 	//~ html += '<div class="msg"><b>Received Message from '+packet.getFromJID()+':</b><br/>';
 	//~ html += packet.getBody().htmlEnc() + '</div>';
@@ -12,6 +14,8 @@ function handleMessage(con, packet) {
 }
 
 function handlePresence(con, packet) {
+	console.log('handlePresence');
+	console.log(packet.xml());
 	//~ var html = '<div class="msg">';
 	//~ if (!packet.getType() && !packet.getShow()) 
 		//~ html += '<b>'+packet.getFromJID()+' has become available.</b>';
@@ -31,6 +35,8 @@ function handlePresence(con, packet) {
 }
 
 function handleIQ(con, iq) {
+	console.log('handleIQ');
+	console.log(iq.xml());
 	//~ document.getElementById('iResp').innerHTML += 
 		//~ "<div class='msg'>IN (raw): " +aIQ.xml().htmlEnc() + '</div>';
 	//~ document.getElementById('iResp').lastChild.scrollIntoView();
@@ -39,6 +45,8 @@ function handleIQ(con, iq) {
 }
 
 function handleError(con, e) {
+	console.log('handleError');
+	console.log(e.outerXml);
 	//~ document.getElementById('err').innerHTML = "An error occured:<br />"+ 
 		//~ ("Code: "+e.getAttribute('code')+"\nType: "+e.getAttribute('type')+
 		//~ "\nCondition: "+e.firstChild.nodeName).htmlEnc(); 
@@ -51,10 +59,13 @@ function handleError(con, e) {
 }
 
 function handleStatusChanged(con, status) {
+	console.log('handleStatusChanged');
+	console.log(status);
 	//~ oDbg.log("status changed: "+status);
 }
 
 function handleConnected(con) {
+	console.log('handleConnected');
 	//~ document.getElementById('login_pane').style.display = 'none';
 	//~ document.getElementById('sendmsg_pane').style.display = '';
 	//~ document.getElementById('err').innerHTML = '';
@@ -63,11 +74,13 @@ function handleConnected(con) {
 }
 
 function handleDisconnected(con) {
+	console.log('handleDisconnected');
 	//~ document.getElementById('login_pane').style.display = '';
 	//~ document.getElementById('sendmsg_pane').style.display = 'none';
 }
 
 function handleIqVersion(con, iq) {
+	console.log('handleIqVersion');
 	con.send(iq.reply([
 		iq.buildNode('name', 'jsjac simpleclient'),
 		iq.buildNode('version', JSJaC.Version),
@@ -78,6 +91,7 @@ function handleIqVersion(con, iq) {
 }
 
 function handleIqTime(con, iq) {
+	console.log('handleIqTime');
 	var now = new Date();
 	con.send(iq.reply([
 		iq.buildNode('display', now.toLocaleString()),
@@ -120,7 +134,7 @@ function setupCon(con) {
 	con.registerIQGet('query', NS_TIME, function(iq) { handleIqTime(con, iq); });
 }
 
-function sendMsg(con, to, msg) {
+function sendMsg(con, to, msg, type) {
 	if (to.indexOf('@') == -1) {
 		to += '@' + con.domain;
 	}
@@ -129,6 +143,11 @@ function sendMsg(con, to, msg) {
 		var aMsg = new JSJaCMessage();
 		aMsg.setTo(new JSJaCJID(to));
 		aMsg.setBody(msg);
+		
+		if (type != undefined) {
+			aMsg.setType(type);
+		}
+		
 		con.send(aMsg);
 	} catch (e) {
 		console.log(e.message);

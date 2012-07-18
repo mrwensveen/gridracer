@@ -74,7 +74,7 @@
 					trackCtx.drawImage(track.img, 0, 0);
 									
 					// show initial moves
-					$(evt.layers[2]).css('opacity', 0.8);
+					$(evt.layers[2]).css('opacity', 0.3);
 					highlightCells(evt.layers[2], player1.color, getValidMoves(player1), evt.cell.width, evt.cell.height);
 				},
 				'click' : function(evt) {
@@ -146,13 +146,39 @@
 
 		var loginArgs = {
 			domain: 'cerebro.forsite.dk',
-			username: 'test2',
+			username: 'piet',
+			alias: 'piet',
 			resource: 'Gridracer',
 			pass: 'test',
-			register: false
+			register: false,
+			authtype: 'saslanon'
 		}
 		
 		var connection = connectAndLogin(connectionArgs, loginArgs);
+		
+		// Enter chat room
+		var chatRoom = 'room@conference.cerebro.forsite.dk/piet';
+		
+		var joinPacket = new JSJaCPresence();
+		joinPacket.setTo(chatRoom);
+		
+		//Build item affiliation element
+		var inode = joinPacket.buildNode('item');
+		inode.setAttribute('affiliation','none');
+		inode.setAttribute('jid', connection.jid);
+		inode.setAttribute('role','participant');
+
+		//Build X Element (with item affiliation child)
+		var xnode = joinPacket.buildNode("x", [inode]);
+		xnode.setAttribute("xmlns", "http://jabber.org/protocol/muc#user");
+		
+		//Append new nodes to join packet
+		joinPacket.appendNode(xnode);
+
+		//Set status in room
+		joinPacket.setStatus('available');
+
+		var success = connection.send(joinPacket, function(data) { console.log(data.getDoc()); });
    	</script>
 </head>
 
