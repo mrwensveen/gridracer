@@ -1,6 +1,8 @@
 /*
  * jQuery.grid.js
- * see license.txt for (c) and licensing information
+ * 
+ * Copyright 2012 Matthijs Wensveen <matthijs@forsite.dk>
+ * see license.txt for licensing information
  */
 
 function getMousePos(canvas, evt){
@@ -41,7 +43,8 @@ function getMousePos(canvas, evt){
 					'created' : null,
 					'click' : null,
 					'mouseenter' : null,
-					'mouseleave' : null
+					'mouseleave' : null,
+					'mousemove' : null
 				}, options);
 				
 				// Create a canvas for each layer
@@ -104,9 +107,13 @@ function getMousePos(canvas, evt){
 					
 				var currentX = -1, currentY = -1;
 				
-				if (settings.mouseenter != null || settings.mouseleave != null) {
+				if (settings.mouseenter != null || settings.mouseleave != null || settings.mousemove != null) {
 					$this.bind('mousemove', function(evt) {
 						var gridEvent = createGridEvent(evt);
+						
+						if (settings.mousemove != null) {
+							settings.mousemove.call(this, gridEvent);
+						}
 						
 						if (currentX != gridEvent.cell.x || currentY != gridEvent.cell.y) {
 							if (settings.mouseleave != null && currentX != -1 && currentY != -1) {

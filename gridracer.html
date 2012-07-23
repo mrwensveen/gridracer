@@ -1,6 +1,8 @@
 <!--
    gridracer.html
-   see license.txt for (c) and licensing information
+   
+   Copyright 2012 Matthijs Wensveen <matthijs@forsite.dk>
+   see license.txt for licensing information
 -->
 <!DOCTYPE html>
 <html>
@@ -11,133 +13,119 @@
 	<script type="text/javascript" src="jsjac.js"></script>
 	<script type="text/javascript" src="jsjac.simpleclient.js"></script>
 	<script type="text/javascript" src="jQuery.grid.js"></script>
+	<script type="text/javascript" src="gridracer.js"></script>
 	<script type="text/javascript">
-		var track = {
-			img: new Image(),
-			width: 50,
-			height: 50
-		}
-		track.img.src = "track1.png";
+		//~ var track = {
+			//~ img: new Image(),
+			//~ width: 50, //70,
+			//~ height: 50
+		//~ }
+		//~ track.image.src = 'track1.png' //'infinity.jpg';
+		
+		$.getJSON('track1.json', function(track) {
+			var canvas = document.createElement('canvas');
+			var ctx = canvas.getContext('2d');
+			
+			var dataImage = new Image();
+			var trackImage = new Image();
+			
+			// When deferred loading and processing of images is complete, initialize the track
+			$.when(
+				$.Deferred(function (dfd) {
+					$(dataImage).load(function() {
+						canvas.width = this.width;
+						canvas.height = this.height;
+						ctx.drawImage(this, 0, 0);
+						
+						track.data = ctx.getImageData(0, 0, this.width, this.height);
+						
+						// done, resolve the deferred object
+						dfd.resolve();
+					});
+				}).promise(),
+				$.Deferred(function (dfd) {
+					$(trackImage).load(function() {
+						track.image = this;
+						
+						// done, resolve the deferred object
+						dfd.resolve();
+					});
+				}).promise()
+			).then(function() {
+				initializeTrack(track);
+			});
+			
+			dataImage.src = track.dataSrc;
+			trackImage.src = track.imageSrc;
+		});
 		
 		var player1 = {
-			img: new Image(),
+			image: new Image(),
 			color: 'red',
-			x: 11,
-			y: 24,
+			x: 35,
+			y: 27,
 			speed: {
 				x: 0,
 				y: 0
 			},
 			moves: [{x: -1, y: -1}, {x: 0, y: -1}, {x: 1, y: -1}, {x: -1, y: 0}, {x: 0, y: 0}, {x: 1, y: 0}, {x: -1, y: 1}, {x: 0, y: 1}, {x: 1, y: 1}]
 		}
-		player1.img.src = "racer.png";
+		player1.image.src = 'racer.png';
 		
-		function getValidMoves(player) {
-			return player.moves.map(function(move) {
-				var targetCell = {
-					x: player.x + player.speed.x + move.x,
-					y: player.y + player.speed.y + move.y
-				};
-				
-				return targetCell;
-			});
-		}
-		
-		function highlightCells(canvas, color, cells, cellWidth, cellHeight) {
-			// clear the canvas
-			var ctx = canvas.getContext('2d');
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			
-			for(var c = 0; c < cells.length; c++) {
-				var cell = cells[c];
-				
-				ctx.fillStyle = color;
-				ctx.fillRect(cell.x * cellWidth, cell.y * cellHeight, cellWidth, cellHeight);
-				
-				ctx.strokeStyle = 'black';
-				ctx.strokeRect(cell.x * cellWidth, cell.y * cellHeight, cellWidth, cellHeight);
-			}
-		}
-		
-		$(window).load(function() {
+		function initializeTrack(track) {
 			var grid = $('#grid').grid(track.width, track.height, {
-				'width' : track.img.width,
-				'height' : track.img.height,
-				'layers' : 4,
+				'width' : track.image.width,
+				'height' : track.image.height,
+				'background-color-even' : 'white',
+				'background-color-odd' : 'white',
+				'stroke' : true,
+				'stroke-color' : '#42bbed',
+				'layers' : 4, // grid (obsolete?), track, targets (valid moves), player
 				'created' : function(evt) {
 					var ctx = evt.layers[3].getContext('2d');
-					ctx.drawImage(player1.img, player1.x * evt.cell.width, player1.y * evt.cell.height);
+					ctx.drawImage(player1.image, player1.x * evt.cell.width, player1.y * evt.cell.height);
 					
 					// show track
-					$(evt.layers[1]).css('opacity', 0.8);
+					//$(evt.layers[1]).css('opacity', 0.8);
 					var trackCtx = evt.layers[1].getContext('2d');
-					trackCtx.drawImage(track.img, 0, 0);
+					trackCtx.drawImage(track.image, 0, 0);
 									
 					// show initial moves
 					$(evt.layers[2]).css('opacity', 0.3);
 					highlightCells(evt.layers[2], player1.color, getValidMoves(player1), evt.cell.width, evt.cell.height);
 				},
 				'click' : function(evt) {
+					//console.log(evt.cell.x + ',' + evt.cell.y);
+					
 					var validMoves = getValidMoves(player1);
 					if (!validMoves.some(function(move) { return move.x == evt.cell.x && move.y == evt.cell.y; })) {
 						return;
 					}
 					
 					var canvas = evt.layers[3];
-					var ctx = canvas.getContext('2d');
-					ctx.clearRect(0, 0, canvas.width, canvas.height);
 					
-					// calculate rotation
-					var dx = evt.cell.x - player1.x;
-					var dy = evt.cell.y - player1.y;
-					
-					var rotation = Math.PI - Math.atan2(dx, dy);
-					
-					ctx.save()
-					
-					// Move to the center of the starting cell and rotate
-					ctx.translate(player1.x * evt.cell.width + evt.cell.width / 2, player1.y * evt.cell.height + evt.cell.height / 2)
-					ctx.rotate(rotation);
-					
-					// Set the new player coordinates
-					player1.x = evt.cell.x;
-					player1.y = evt.cell.y;
-					player1.speed = {
-						x: dx,
-						y: dy
-					};
-
-					// Calculate the distance
-					var dist = Math.sqrt(Math.pow(dx * evt.cell.width, 2) + Math.pow(dy * evt.cell.height, 2))
-					
-					// animate over distance (from 0 to dist) in 500 ms
-					$({ n: 0 }).animate({ n: dist}, {
-						duration: 500,
-						step: function(now, fx) {
-							// Clear the path
-							ctx.clearRect(0 - evt.cell.width / 2, evt.cell.height / 2, evt.cell.width, 0 - (now + evt.cell.height));
-							ctx.drawImage(player1.img, 0 - evt.cell.width / 2, 0 - now - evt.cell.height / 2);
-						},
-						complete: function() {
-							ctx.restore();
-							
-							highlightCells(evt.layers[2], player1.color, getValidMoves(player1), evt.cell.width, evt.cell.height);
-						}
+					movePlayer(player1, track, evt.cell, canvas, function() {
+						highlightCells(evt.layers[2], player1.color, getValidMoves(player1), evt.cell.width, evt.cell.height);
 					});
 				},
-				'mouseenter' : null, /*function(evt) {
+				'mouseenter' : null /*function(evt) {
 					var ctx = evt.layers[3].getContext('2d');
 					ctx.fillStyle = 'blue';
 					ctx.fillRect(evt.cell.width * evt.cell.x, evt.cell.height * evt.cell.y, evt.cell.width, evt.cell.height);
-				},*/
+				}*/,
 				'mouseleave' : null /*function(evt) {
 					var ctx = evt.layers[3].getContext('2d');
 					ctx.clearRect(evt.cell.width * evt.cell.x, evt.cell.height * evt.cell.y, evt.cell.width, evt.cell.height);
+				}*/,
+				'mousemove' : null /*function(evt) {
+					var x = evt.mouse.x;
+					var y = evt.mouse.y;
+					console.log(x + ',' + y + ': ' + track.data.data[(y * track.data.width + x) * 4 + 1]);
 				}*/
 			});
-		});
+		};
 	</script>
-	<script type="text/javascript">
+	<!--<script type="text/javascript">
 		var connectionArgs = {
 			httpbase: 'http://localhost:5280/http-bind/',
 			timerval: 2000,
@@ -179,7 +167,7 @@
 		joinPacket.setStatus('available');
 
 		var success = connection.send(joinPacket, function(data) { console.log(data.getDoc()); });
-   	</script>
+   	</script>-->
 </head>
 
 <body>
