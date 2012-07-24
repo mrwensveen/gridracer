@@ -9,11 +9,11 @@
 
 <head>
 	<title>Gridracer</title>
-	<script type="text/javascript" src="jquery-1.7.2.min.js"></script>
-	<script type="text/javascript" src="jsjac.js"></script>
-	<script type="text/javascript" src="jsjac.simpleclient.js"></script>
-	<script type="text/javascript" src="jQuery.grid.js"></script>
-	<script type="text/javascript" src="gridracer.js"></script>
+	<script type="text/javascript" src="script/jquery-1.7.2.min.js"></script>
+	<script type="text/javascript" src="script/jsjac.js"></script>
+	<script type="text/javascript" src="script/jsjac.simpleclient.js"></script>
+	<script type="text/javascript" src="script/jQuery.grid.js"></script>
+	<script type="text/javascript" src="script/gridracer.js"></script>
 	<script type="text/javascript">
 		//~ var track = {
 			//~ img: new Image(),
@@ -22,7 +22,7 @@
 		//~ }
 		//~ track.image.src = 'track1.png' //'infinity.jpg';
 		
-		$.getJSON('track1.json', function(track) {
+		$.getJSON('track/track1.json', function(track) {
 			var canvas = document.createElement('canvas');
 			var ctx = canvas.getContext('2d');
 			
@@ -70,7 +70,7 @@
 			},
 			moves: [{x: -1, y: -1}, {x: 0, y: -1}, {x: 1, y: -1}, {x: -1, y: 0}, {x: 0, y: 0}, {x: 1, y: 0}, {x: -1, y: 1}, {x: 0, y: 1}, {x: 1, y: 1}]
 		}
-		player1.image.src = 'racer.png';
+		player1.image.src = 'image/racer.png';
 		
 		function initializeTrack(track) {
 			var grid = $('#grid').grid(track.width, track.height, {
