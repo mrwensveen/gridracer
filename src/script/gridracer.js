@@ -18,107 +18,95 @@ function getValidMoves(player) {
 }
 
 function movePlayer(player, track, cell, canvas, complete) {
+	var transform = $(canvas).data('transform');
+	if (transform == null) {
+		transform = new Transform();
+		$(canvas).data('transform', transform);
+	}
+	
 	var ctx = canvas.getContext('2d');
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	
 	// the dx and dy in cells
-	var dx = cell.x - player1.x;
-	var dy = cell.y - player1.y;
+	var dx = cell.x - player.x;
+	var dy = cell.y - player.y;
 	
 	// the dx and dy in pixels
 	var dx_px = dx * cell.width;
 	var dy_px = dy * cell.height;
 	
-	// Detect collisions (track bounds)
 	
-	// Collision detection only takes the center point of the player in accountance,
-	// because it's easier. Otherwise a bounding box would need to be used and their
-	// coordinates would have to be calculated by using matrix calculations
-	// (which I don't want to do right now :) )
-
-
-	var step_x, step_y;
-	if (Math.abs(dx_px) > Math.abs(dy_px)) {
-		step_x = dx_px / Math.abs(dx_px);
-		step_y = dy_px / Math.abs(dx_px);
-	} else {
-		step_x = dx_px / Math.abs(dy_px);
-		step_y = dy_px / Math.abs(dy_px);
-	}
+	// TODO: detect checkpoints
 	
-	// Center coordinates of player in pixels
+	transform.save()
+	
+	// Move to the center of the starting cell
 	var player_x_px = player.x * cell.width + cell.width / 2;
 	var player_y_px = player.y * cell.height + cell.height / 2;
+	transform.translate(player_x_px, player_y_px)
+
+	// calculate rotation
+	var rotation = Math.PI - Math.atan2(dx, dy);
+	transform.rotate(rotation);
+
+	// Calculate the animation distance
+	var dist = Math.sqrt(Math.pow(dx_px, 2) + Math.pow(dy_px, 2))
 	
+	// Detect collisions with track bounds
 	var collision = false;
-	
-	var end_x_px, x_px = 0;
-	var end_y_px, y_px = 0;
-	while (Math.abs(x_px) <= Math.abs(dx_px) && Math.abs(y_px) <= Math.abs(dy_px)) {
-		// bitwise OR with 0 to get the int part
-		end_x_px = (player_x_px + x_px) | 0;
-		end_y_px = (player_y_px + y_px) | 0;
+	var d = 0;
+	while (d <= dist) {
+		var top = int(0 - d - cell.height / 2);
 		
-		var pixel = getPixelValue(track.data.data, track.data.width, end_x_px, end_y_px);
-		console.log(end_x_px + ',' + end_y_px + ': ' + pixel);
+		var collisionPoint = transform.getTransformedPoint(0, top);
+		var pixel = getPixelValue(track.data.data, track.data.width, int(collisionPoint[0]), int(collisionPoint[1]));
 		
 		if (pixel != 0) {
+			// Collision!
 			collision = true;
 			break;
 		}
 		
-		x_px += step_x;
-		y_px += step_y;
+		d++;
 	}
-	
-	// Set the new player speed and coordinates
+
 	if (collision) {
-		// collision, STOP!
+		// get coordinates of the center of the player
+		var playerPoint = transform.getTransformedPoint(0, int(0 - d));
+		
 		player.speed = { x: 0, y: 0 };
-		player.x = (end_x_px / cell.width) | 0;
-		player.y = (end_y_px / cell.height) | 0;
+		player.x = int(playerPoint[0] / cell.width);
+		player.y = int(playerPoint[1] / cell.height);
 	} else {
-		player.speed = {
-			x: dx,
-			y: dy
-		};
+		player.speed = { x: dx, y: dy };
 		player.x = cell.x;
 		player.y = cell.y;
 	}
 	
-	// TODO: detect checkpoints
-	
-	// calculate rotation
-	var rotation = Math.PI - Math.atan2(dx, dy);
-	
-	ctx.save()
-	
-	// Move to the center of the starting cell and rotate
-	ctx.translate(player_x_px, player_y_px)
-	ctx.rotate(rotation);
-	
-	// Calculate the animation distance
-	var dist = Math.sqrt(Math.pow(dx_px, 2) + Math.pow(dy_px, 2))
-	// Calculate the real distance
-	var dist_real = Math.sqrt(Math.pow(end_x_px - player_x_px, 2) + Math.pow(end_y_px - player_y_px, 2))
-	
 	// animate over distance (from 0 to dist) in 500 ms
-	$({ n: 0 }).animate({ n: dist}, {
+	transform.applyToContext(ctx);
+	$({ n: 0 }).animate({ n: dist }, {
 		duration: 400,
 		step: function(now, fx) {
 			// Clear the path (whole canvas would also do the trick, but this is a little more optimized)
-			ctx.clearRect(0 - cell.width / 2, cell.height / 2, cell.width, 0 - (now + cell.height));
+			var left = 0 - cell.width / 2;
+			var top = 0 - now - cell.height / 2;
+			ctx.clearRect(left, cell.height / 2, cell.width, top);
 			
-			ctx.drawImage(player1.image, 0 - cell.width / 2, 0 - now - cell.height / 2);
-			
-			if (now >= dist_real) {
+			// draw the player at the current position
+			ctx.drawImage(player1.image, left, top);
+
+			if (collision && now >= d) {
 				$(fx.elem).stop();
-				ctx.restore();
+
+				transform.restore();
+				transform.applyToContext(ctx);
 				complete.call(this);
 			}
 		},
 		complete: function() {
-			ctx.restore();
+			transform.restore();
+			transform.applyToContext(ctx);
 			complete.call(this);
 		}
 	});
@@ -146,4 +134,9 @@ function getPixelValue(pixels, width, x, y) {
 			pixels[offset + 1] << 16 |
 			pixels[offset + 2] <<  8 |
 			pixels[offset + 3];
+}
+
+function int(x) {
+	// bitwise OR with 0 to get the int part
+	return x | 0;
 }

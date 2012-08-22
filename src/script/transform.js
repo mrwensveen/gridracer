@@ -93,7 +93,7 @@ Transform.prototype.setTransform = function(m11, m12, m21, m22, dx, dy) {
 	]);
 };
 
-Transform.prototype.applyToContext(ctx) {
+Transform.prototype.applyToContext = function(ctx) {
 	ctx.setTransform(this.m.e(1,1), this.m.e(2,1), this.m.e(1,2), this.m.e(2,2), this.m.e(1,3), this.m.e(2,3));
 };
 
