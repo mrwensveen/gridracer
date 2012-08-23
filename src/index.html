@@ -16,7 +16,11 @@
 	</style>
 	<script type="text/javascript" src="js/jquery-1.8.0.min.js"></script>
 	<script type="text/javascript" src="js/jquery-ui-1.8.23.custom.min.js"></script>
+	<script type="text/javascript" src="js/jsjac.js"></script>
+	<script type="text/javascript" src="js/jsjac.simpleclient.js"></script>
 	<script type="text/javascript">
+		var connection;
+		
 		$(function() {
 			$('button').button();
 			$('#create-game').click(function() {
@@ -36,6 +40,48 @@
 						// TODO: Validate
 						
 						// TODO: Communicate with jabber. Create MUC, etc
+						var connectionArgs = {
+							httpbase: 'http://cerebro.forsite.dk:5280/http-bind/',
+							timerval: 2000,
+							backend: 'binding'
+						}
+
+						var loginArgs = {
+							domain: 'cerebro.forsite.dk',
+							username: $('#player-name').val(),
+							alias: $('#player-name').val(),
+							resource: 'Gridracer',
+							pass: '',
+							register: false,
+							authtype: 'saslanon'
+						}
+						
+						connection = connectAndLogin(connectionArgs, loginArgs);
+						
+						// Enter chat room
+						var chatRoom = $('#game-name').val() + '@conference.cerebro.forsite.dk/' + $('#player-name').val();
+						
+						var joinPacket = new JSJaCPresence();
+						joinPacket.setTo(chatRoom);
+						
+						//Build item affiliation element
+						var inode = joinPacket.buildNode('item');
+						inode.setAttribute('affiliation','none');
+						inode.setAttribute('jid', connection.jid);
+						inode.setAttribute('role','participant');
+
+						//Build X Element (with item affiliation child)
+						var xnode = joinPacket.buildNode("x", [inode]);
+						xnode.setAttribute("xmlns", "http://jabber.org/protocol/muc");
+						
+						//Append new nodes to join packet
+						joinPacket.appendNode(xnode);
+
+						//Set status in room
+						joinPacket.setStatus('available');
+
+						var success = connection.send(joinPacket, function(data) { console.log(data.getDoc()); });
+						
 					},
 					Cancel: function() {
 						$( this ).dialog('close');
@@ -70,6 +116,7 @@
 </head>
 
 <body>
+	<div id="splash"><img src="image/gridracer_splash.png" alt="GRIDRACER"/></div>
 	<button id="create-game">Create new game</button>
 	<button id="join-game">Join game</button>
 	

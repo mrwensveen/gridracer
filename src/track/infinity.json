@@ -1,0 +1,12 @@
+{
+	"name": "Infinity",
+	"width": 70,
+	"height": 50,
+	"imageSrc": "track/infinity.png",
+	"dataSrc": "track/infinity_data.png",
+	"start": [{"x": 35, "y": 26}, {"x": 34, "y": 26}, {"x": 36, "y": 26}, {"x": 33, "y": 26}, {"x": 37, "y": 26}],
+	"checkpoints" : [
+		{"from": {"x": 255, "y": 370}, "to": {"x": 420, "y": 540}},
+		{"from": {"x": 615, "y": 520}, "to": {"x": 800, "y": 520}}
+	]
+}
