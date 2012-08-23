@@ -1,0 +1,118 @@
+<!--
+   gridracer.html
+   
+   Copyright 2012 Matthijs Wensveen <matthijs@forsite.dk>
+   see license.txt for licensing information
+-->
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>untitled</title>
+	<link type="text/css" href="css/trontastic/jquery-ui-1.8.23.custom.css" rel="stylesheet" />
+	<style>
+		body { font-size: 1em; }
+		label, input { display:block; }
+	</style>
+	<script type="text/javascript" src="js/jquery-1.8.0.min.js"></script>
+	<script type="text/javascript" src="js/jquery-ui-1.8.23.custom.min.js"></script>
+	<script type="text/javascript">
+		$(function() {
+			$('button').button();
+			$('#create-game').click(function() {
+				$('#dialog-create-game').dialog('open');
+			});
+			$('#join-game').click(function() {
+				$('#dialog-join-game').dialog('open');
+			});
+			
+			$('#dialog-create-game').dialog({
+				autoOpen: false,
+				height: 500,
+				width: 500,
+				modal: true,
+				buttons: {
+					'Create game': function() {
+						// TODO: Validate
+						
+						// TODO: Communicate with jabber. Create MUC, etc
+					},
+					Cancel: function() {
+						$( this ).dialog('close');
+					}
+				},
+				close: function() {
+					allFields.val('').removeClass('ui-state-error');
+				}
+			});
+			
+			$('#dialog-join-game').dialog({
+				autoOpen: false,
+				height: 500,
+				width: 500,
+				modal: true,
+				buttons: {
+					'Join game': function() {
+						// TODO: Validate
+						
+						// TODO: Communicate with jabber. Join MUC, etc
+					},
+					Cancel: function() {
+						$( this ).dialog('close');
+					}
+				},
+				close: function() {
+					allFields.val('').removeClass('ui-state-error');
+				}
+			});
+		});
+	</script>
+</head>
+
+<body>
+	<button id="create-game">Create new game</button>
+	<button id="join-game">Join game</button>
+	
+	<div id="dialog-create-game" title="Create new game">
+		<p class="validateTips">All form fields are required.</p>
+
+		<form>
+			<fieldset>
+				<legend>Game</legend>
+				<label for="game-name">Name</label>
+				<input type="text" name="game-name" id="game-name" class="text ui-widget-content ui-corner-all" />
+				<label for="game-track">Track</label>
+				<input type="text" name="game-track" id="game-track" class="text ui-widget-content ui-corner-all" />
+			</fieldset>
+			<fieldset>
+				<legend>Player</legend>
+				<label for="player-name">Name</label>
+				<input type="text" name="player-name" id="player-name" class="text ui-widget-content ui-corner-all" />
+				<label for="player-vehicle">Vehicle</label>
+				<input type="text" name="player-vechicle" id="player-vehicle" class="text ui-widget-content ui-corner-all" />
+			</fieldset>
+		</form>
+	</div>
+	
+	<div id="dialog-join-game" title="Join game">
+		<p class="validateTips">All form fields are required.</p>
+
+		<form>
+			<fieldset>
+				<legend>Game</legend>
+				<label for="game-name">Name</label>
+				<input type="text" name="game-name" id="game-name" class="text ui-widget-content ui-corner-all" />
+			</fieldset>
+			<fieldset>
+				<legend>Player</legend>
+				<label for="player-name">Name</label>
+				<input type="text" name="player-name" id="player-name" class="text ui-widget-content ui-corner-all" />
+				<label for="player-vehicle">Vehicle</label>
+				<input type="text" name="player-vechicle" id="player-vehicle" class="text ui-widget-content ui-corner-all" />
+			</fieldset>
+		</form>
+	</div>
+
+</body>
+
+</html>
