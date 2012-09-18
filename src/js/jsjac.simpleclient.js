@@ -102,7 +102,7 @@ function handleIqTime(con, iq) {
 	return true;
 }
 
-function connectAndLogin(connectionArgs, loginArgs) {
+function connectAndLogin(connectionArgs, loginArgs, eventHandlers) {
 	var con;
 	try {
 		if (connectionArgs.backend == 'binding') {
@@ -111,7 +111,7 @@ function connectAndLogin(connectionArgs, loginArgs) {
 			con = new JSJaCHttpPollingConnection(connectionArgs);
 		}
 
-		setupCon(con);
+		setupCon(con, eventHandlers);
 
 		con.connect(loginArgs);
 	} catch (e) {
@@ -121,17 +121,28 @@ function connectAndLogin(connectionArgs, loginArgs) {
 	}
 }
 
-function setupCon(con) {
-	con.registerHandler('message', function(packet) { handleMessage(con, packet); });
-	con.registerHandler('presence', function(packet) { handlePresence(con, packet); });
-	con.registerHandler('iq', function(iq) { handleIQ(con, iq); });
-	con.registerHandler('onerror', function(error) { handleError(con, error); });
-	con.registerHandler('status_changed', function(status) { handleStatusChanged(con, status); });
-	con.registerHandler('onconnect', function() { handleConnected(con); });
-	con.registerHandler('ondisconnect', function() { handleDisconnected(con); });
+function setupCon(con, handlers) {
+	var defaultHandlers = {
+		'onconnect': function() { handleConnected(con); },
+		'ondisconnect': function() { handleDisconnected(con); },
+		'message': function(packet) { handleMessage(con, packet); },
+		'presence': function(packet) { handlePresence(con, packet); },
+		'onerror': function(error) { handleError(con, error); },
+		'status_changed': function(status) { handleStatusChanged(con, status); },
+		'iq': function(iq) { handleIQ(con, iq); },
+		'iq_version': function(iq) { handleIqVersion(con, iq); },
+		'iq_time': function(iq) { handleIqTime(con, iq); }
+	};
+	jQuery.extend(defaultHandlers, handlers);
+	
+	jQuery.each(defaultHandlers, function(event, func) {
+		if (event.substring(0, 3) != "iq_") {
+			con.registerHandler(event, func);
+		}
+	});
 
-	con.registerIQGet('query', NS_VERSION, function(iq) { handleIqVersion(con, iq); });
-	con.registerIQGet('query', NS_TIME, function(iq) { handleIqTime(con, iq); });
+	con.registerIQGet('query', NS_VERSION, defaultHandlers.iq_version);
+	con.registerIQGet('query', NS_TIME, defaultHandlers.iq_time);
 }
 
 function sendMsg(con, to, msg, type) {

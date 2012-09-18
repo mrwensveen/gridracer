@@ -8,7 +8,7 @@
 <html>
 
 <head>
-	<title>untitled</title>
+	<title>GRIDRACER</title>
 	<link type="text/css" href="css/trontastic/jquery-ui-1.8.23.custom.css" rel="stylesheet" />
 	<style>
 		body { font-size: 1em; }
@@ -20,8 +20,15 @@
 	<script type="text/javascript" src="js/jsjac.simpleclient.js"></script>
 	<script type="text/javascript">
 		var connection;
+		$(window).unload(function() {
+			if (connection != null) {
+				quit(connection);
+			}
+		});
 		
 		$(function() {
+			$('#screen_game').hide();
+			
 			$('button').button();
 			$('#create-game').click(function() {
 				$('#dialog-create-game').dialog('open');
@@ -39,7 +46,6 @@
 					'Create game': function() {
 						// TODO: Validate
 						
-						// TODO: Communicate with jabber. Create MUC, etc
 						var connectionArgs = {
 							httpbase: 'http://cerebro.forsite.dk:5280/http-bind/',
 							timerval: 2000,
@@ -56,39 +62,52 @@
 							authtype: 'saslanon'
 						}
 						
-						connection = connectAndLogin(connectionArgs, loginArgs);
-						
-						// Enter chat room
-						var chatRoom = $('#game-name').val() + '@conference.cerebro.forsite.dk/' + $('#player-name').val();
-						
-						var joinPacket = new JSJaCPresence();
-						joinPacket.setTo(chatRoom);
-						
-						//Build item affiliation element
-						var inode = joinPacket.buildNode('item');
-						inode.setAttribute('affiliation','none');
-						inode.setAttribute('jid', connection.jid);
-						inode.setAttribute('role','participant');
+						connection = connectAndLogin(connectionArgs, loginArgs, {
+							'onconnect': function() {
+								var nickname = $('#player-name').val();
+								var game = {
+									type: 'game',
+									name: $('#game-name').val(),
+									track: $('#game-track').val(),
+									players: {}
+								};
+								game.players[connection.fulljid] = {
+									type: 'player',
+									name: nickname,
+									vehicle: $('#player-vehicle').val()
+								};
+								
+								// Enter chat room
+								var chatRoom = game.name + '@conference.cerebro.forsite.dk';
+																
+								var joinPacket = new JSJaCPresence();
+								joinPacket.setTo(chatRoom + '/' + nickname);
+								
+								//Set status in room
+								//joinPacket.setStatus('available');
+								
+								joinPacket.appendNode('x', {xmlns: "http://jabber.org/protocol/muc"})
+								
 
-						//Build X Element (with item affiliation child)
-						var xnode = joinPacket.buildNode("x", [inode]);
-						xnode.setAttribute("xmlns", "http://jabber.org/protocol/muc");
-						
-						//Append new nodes to join packet
-						joinPacket.appendNode(xnode);
-
-						//Set status in room
-						joinPacket.setStatus('available');
-
-						var success = connection.send(joinPacket, function(data) { console.log(data.getDoc()); });
-						
+								var success = connection.send(joinPacket, function(data) {
+									// todo?
+								});
+								
+								if (success) {
+									alert('gaaaame!');
+									sendMsg(connection, chatRoom, JSON.stringify(game), 'groupchat');
+								} else {
+									alert('no gaaaame!');
+								}
+							}
+						});
 					},
 					Cancel: function() {
 						$( this ).dialog('close');
 					}
 				},
 				close: function() {
-					allFields.val('').removeClass('ui-state-error');
+					//allFields.val('').removeClass('ui-state-error');
 				}
 			});
 			
@@ -108,7 +127,7 @@
 					}
 				},
 				close: function() {
-					allFields.val('').removeClass('ui-state-error');
+					//allFields.val('').removeClass('ui-state-error');
 				}
 			});
 		});
@@ -116,50 +135,57 @@
 </head>
 
 <body>
-	<div id="splash"><img src="image/gridracer_splash.png" alt="GRIDRACER"/></div>
-	<button id="create-game">Create new game</button>
-	<button id="join-game">Join game</button>
-	
-	<div id="dialog-create-game" title="Create new game">
-		<p class="validateTips">All form fields are required.</p>
+	<div id="screen_home">
+		<div id="splash"><img src="image/gridracer_splash.png" alt="GRIDRACER"/></div>
+		<button id="create-game">Create new game</button>
+		<button id="join-game">Join game</button>
+		
+		<div id="dialog-create-game" title="Create new game">
+			<p class="validateTips">All form fields are required.</p>
 
-		<form>
-			<fieldset>
-				<legend>Game</legend>
-				<label for="game-name">Name</label>
-				<input type="text" name="game-name" id="game-name" class="text ui-widget-content ui-corner-all" />
-				<label for="game-track">Track</label>
-				<input type="text" name="game-track" id="game-track" class="text ui-widget-content ui-corner-all" />
-			</fieldset>
-			<fieldset>
-				<legend>Player</legend>
-				<label for="player-name">Name</label>
-				<input type="text" name="player-name" id="player-name" class="text ui-widget-content ui-corner-all" />
-				<label for="player-vehicle">Vehicle</label>
-				<input type="text" name="player-vechicle" id="player-vehicle" class="text ui-widget-content ui-corner-all" />
-			</fieldset>
-		</form>
+			<form>
+				<fieldset>
+					<legend>Game</legend>
+					<label for="game-name">Name</label>
+					<input type="text" name="game-name" id="game-name" class="text ui-widget-content ui-corner-all" />
+					<label for="game-track">Track</label>
+					<input type="text" name="game-track" id="game-track" class="text ui-widget-content ui-corner-all" />
+				</fieldset>
+				<fieldset>
+					<legend>Player</legend>
+					<label for="player-name">Name</label>
+					<input type="text" name="player-name" id="player-name" class="text ui-widget-content ui-corner-all" />
+					<label for="player-vehicle">Vehicle</label>
+					<input type="text" name="player-vechicle" id="player-vehicle" class="text ui-widget-content ui-corner-all" />
+				</fieldset>
+			</form>
+		</div>
+		
+		<div id="dialog-join-game" title="Join game">
+			<p class="validateTips">All form fields are required.</p>
+
+			<form>
+				<fieldset>
+					<legend>Game</legend>
+					<label for="game-name">Name</label>
+					<input type="text" name="game-name" id="game-name" class="text ui-widget-content ui-corner-all" />
+				</fieldset>
+				<fieldset>
+					<legend>Player</legend>
+					<label for="player-name">Name</label>
+					<input type="text" name="player-name" id="player-name" class="text ui-widget-content ui-corner-all" />
+					<label for="player-vehicle">Vehicle</label>
+					<input type="text" name="player-vechicle" id="player-vehicle" class="text ui-widget-content ui-corner-all" />
+				</fieldset>
+			</form>
+		</div>
 	</div>
-	
-	<div id="dialog-join-game" title="Join game">
-		<p class="validateTips">All form fields are required.</p>
-
-		<form>
-			<fieldset>
-				<legend>Game</legend>
-				<label for="game-name">Name</label>
-				<input type="text" name="game-name" id="game-name" class="text ui-widget-content ui-corner-all" />
-			</fieldset>
-			<fieldset>
-				<legend>Player</legend>
-				<label for="player-name">Name</label>
-				<input type="text" name="player-name" id="player-name" class="text ui-widget-content ui-corner-all" />
-				<label for="player-vehicle">Vehicle</label>
-				<input type="text" name="player-vechicle" id="player-vehicle" class="text ui-widget-content ui-corner-all" />
-			</fieldset>
-		</form>
+	<div id="screen_game">
+		<div class="grid">
+			grid
+		</div>
+		<button id="start-game">Start game</button>
 	</div>
-
 </body>
 
 </html>

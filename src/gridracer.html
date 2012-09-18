@@ -17,13 +17,6 @@
 	<script type="text/javascript" src="js/transform.js"></script>
 	<script type="text/javascript" src="js/gridracer.js"></script>
 	<script type="text/javascript">
-		//~ var track = {
-			//~ img: new Image(),
-			//~ width: 50, //70,
-			//~ height: 50
-		//~ }
-		//~ track.image.src = 'track1.png' //'infinity.jpg';
-		
 		$.getJSON('track/track1.json', function(track) {
 			var canvas = document.createElement('canvas');
 			var ctx = canvas.getContext('2d');
@@ -127,49 +120,6 @@
 			});
 		};
 	</script>
-	<!--<script type="text/javascript">
-		var connectionArgs = {
-			httpbase: 'http://cerebro.forsite.dk:5280/http-bind/',
-			timerval: 2000,
-			backend: 'binding'
-		}
-
-		var loginArgs = {
-			domain: 'cerebro.forsite.dk',
-			username: 'piet',
-			alias: 'piet',
-			resource: 'Gridracer',
-			pass: 'test',
-			register: false,
-			authtype: 'saslanon'
-		}
-		
-		var connection = connectAndLogin(connectionArgs, loginArgs);
-		
-		// Enter chat room
-		var chatRoom = 'room@conference.cerebro.forsite.dk/piet';
-		
-		var joinPacket = new JSJaCPresence();
-		joinPacket.setTo(chatRoom);
-		
-		//Build item affiliation element
-		var inode = joinPacket.buildNode('item');
-		inode.setAttribute('affiliation','none');
-		inode.setAttribute('jid', connection.jid);
-		inode.setAttribute('role','participant');
-
-		//Build X Element (with item affiliation child)
-		var xnode = joinPacket.buildNode("x", [inode]);
-		xnode.setAttribute("xmlns", "http://jabber.org/protocol/muc#user");
-		
-		//Append new nodes to join packet
-		joinPacket.appendNode(xnode);
-
-		//Set status in room
-		joinPacket.setStatus('available');
-
-		var success = connection.send(joinPacket, function(data) { console.log(data.getDoc()); });
-   	</script>-->
 </head>
 
 <body>
