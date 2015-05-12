@@ -6,6 +6,8 @@
  * 
  */
 
+/* global Transform */
+
 function getValidMoves(player) {
 	return player.moves.map(function(move) {
 		var targetCell = {
@@ -19,7 +21,7 @@ function getValidMoves(player) {
 
 function movePlayer(player, track, cell, canvas, complete) {
 	var transform = $(canvas).data('transform');
-	if (transform == null) {
+	if (typeof transform == 'undefined' || transform === null) {
 		transform = new Transform();
 		$(canvas).data('transform', transform);
 	}
@@ -38,19 +40,19 @@ function movePlayer(player, track, cell, canvas, complete) {
 	
 	// TODO: detect checkpoints
 	
-	transform.save()
+	transform.save();
 	
 	// Move to the center of the starting cell
 	var player_x_px = player.x * cell.width + cell.width / 2;
 	var player_y_px = player.y * cell.height + cell.height / 2;
-	transform.translate(player_x_px, player_y_px)
+	transform.translate(player_x_px, player_y_px);
 
 	// calculate rotation
 	var rotation = Math.PI - Math.atan2(dx, dy);
 	transform.rotate(rotation);
 
 	// Calculate the animation distance
-	var dist = Math.sqrt(Math.pow(dx_px, 2) + Math.pow(dy_px, 2))
+	var dist = Math.sqrt(Math.pow(dx_px, 2) + Math.pow(dy_px, 2));
 	
 	// Detect collisions with track bounds
 	var collision = false;
@@ -61,7 +63,7 @@ function movePlayer(player, track, cell, canvas, complete) {
 		var collisionPoint = transform.getTransformedPoint(0, top);
 		var pixel = getPixelValue(track.data.data, track.data.width, int(collisionPoint[0]), int(collisionPoint[1]));
 		
-		if (pixel != 0) {
+		if (pixel !== 0) {
 			// Collision!
 			collision = true;
 			break;
@@ -94,7 +96,7 @@ function movePlayer(player, track, cell, canvas, complete) {
 			ctx.clearRect(left, cell.height / 2, cell.width, top);
 			
 			// draw the player at the current position
-			ctx.drawImage(player1.image, left, top);
+			ctx.drawImage(player.image, left, top);
 
 			if (collision && now >= d) {
 				$(fx.elem).stop();

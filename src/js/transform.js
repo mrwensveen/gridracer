@@ -6,29 +6,22 @@
  */
 
 //---------------------------------
-// Last updated November 2011
-// By Simon Sarris
-// www.simonsarris.com
-// sarris@acm.org
-//
-// Free to use and distribute at will
-// So long as you are nice to people, etc
-
 // Simple class for keeping track of the current transformation matrix
-
+//
 // For instance:
 //    var t = new Transform();
 //    t.rotate(5);
 //    var m = t.m;
 //    ctx.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
-
+//
 // Is equivalent to:
 //    ctx.rotate(5);
-
+//
 // But now you can retrieve it :)
-
 // Remember that this does not account for any CSS transforms applied to the canvas
 //---------------------------------
+
+/* global Matrix $M $V */
 
 function Transform() {
 	this.reset();
@@ -69,7 +62,7 @@ Transform.prototype.translate = function(x, y) {
 	]));
 };
 
-Transform.prototype.scale = function(sx, sy) {
+Transform.prototype.scale = function(x, y) {
 	this.m = this.m.multiply($M([
 		[x, 0, 0],
 		[0, y, 0],
