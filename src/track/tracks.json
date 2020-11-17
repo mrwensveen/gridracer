@@ -1,10 +1,10 @@
 [
 	{
-		"name": "Infinity",
-		"width": 70,
+		"name": "Track 1",
+		"width": 50,
 		"height": 50,
-		"imageSrc": "track/infinity.png",
-		"dataSrc": "track/infinity_data.png",
+		"imageSrc": "track/track1.png",
+		"dataSrc": "track/track1_data.png",
 		"start": [{"x": 35, "y": 26}, {"x": 34, "y": 26}, {"x": 36, "y": 26}, {"x": 33, "y": 26}, {"x": 37, "y": 26}],
 		"checkpoints" : [
 			{"from": {"x": 255, "y": 370}, "to": {"x": 420, "y": 540}},
@@ -12,11 +12,11 @@
 		]
 	},
 	{
-		"name": "Track 1",
-		"width": 50,
+		"name": "Infinity",
+		"width": 70,
 		"height": 50,
-		"imageSrc": "track/track1.png",
-		"dataSrc": "track/track1_data.png",
+		"imageSrc": "track/infinity.jpg",
+		"dataSrc": "track/infinity_data.png",
 		"start": [{"x": 35, "y": 26}, {"x": 34, "y": 26}, {"x": 36, "y": 26}, {"x": 33, "y": 26}, {"x": 37, "y": 26}],
 		"checkpoints" : [
 			{"from": {"x": 255, "y": 370}, "to": {"x": 420, "y": 540}},
