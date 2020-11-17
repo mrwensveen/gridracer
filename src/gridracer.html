@@ -1,29 +1,29 @@
 <!--
    gridracer.html
-   
+
    Copyright 2012 Matthijs Wensveen <matthijs@forsite.dk>
    see license.txt for licensing information
 -->
 <!DOCTYPE html>
 <html>
-
 <head>
+	<meta charset="UTF-8">
 	<title>Gridracer</title>
-	<script type="text/javascript" src="js/jquery-1.8.0.min.js"></script>
-	<script type="text/javascript" src="js/jsjac.js"></script>
-	<script type="text/javascript" src="js/jsjac.simpleclient.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
 	<script type="text/javascript" src="js/jQuery.grid.js"></script>
 	<script type="text/javascript" src="js/sylvester.js"></script>
 	<script type="text/javascript" src="js/transform.js"></script>
 	<script type="text/javascript" src="js/gridracer.js"></script>
 	<script type="text/javascript">
-		$.getJSON('track/track1.json', function(track) {
+		$.getJSON('track/tracks.json', function(tracks) {
 			var canvas = document.createElement('canvas');
 			var ctx = canvas.getContext('2d');
-			
+
 			var dataImage = new Image();
 			var trackImage = new Image();
-			
+
+			const track = tracks[0];
+
 			// When deferred loading and processing of images is complete, initialize the track
 			$.when(
 				$.Deferred(function (dfd) {
@@ -31,9 +31,9 @@
 						canvas.width = this.width;
 						canvas.height = this.height;
 						ctx.drawImage(this, 0, 0);
-						
+
 						track.data = ctx.getImageData(0, 0, this.width, this.height);
-						
+
 						// done, resolve the deferred object
 						dfd.resolve();
 					});
@@ -41,19 +41,25 @@
 				$.Deferred(function (dfd) {
 					$(trackImage).load(function() {
 						track.image = this;
-						
+
 						// done, resolve the deferred object
 						dfd.resolve();
 					});
 				}).promise()
 			).then(function() {
 				initializeTrack(track);
+
+				$(document).on('keyup', evt => {
+					console.log('document keyup', evt);
+
+					$('#grid').trigger(evt);
+				});
 			});
-			
+
 			dataImage.src = track.dataSrc;
 			trackImage.src = track.imageSrc;
 		});
-		
+
 		var player1 = {
 			image: new Image(),
 			color: 'red',
@@ -65,8 +71,8 @@
 			},
 			moves: [{x: -1, y: -1}, {x: 0, y: -1}, {x: 1, y: -1}, {x: -1, y: 0}, {x: 0, y: 0}, {x: 1, y: 0}, {x: -1, y: 1}, {x: 0, y: 1}, {x: 1, y: 1}]
 		};
-		player1.image.src = 'image/vehicle/ufo.png';
-		
+		player1.image.src = 'image/vehicle/racer.png';
+
 		function initializeTrack(track) {
 			var grid = $('#grid').grid(track.width, track.height, {
 				'width' : track.image.width,
@@ -79,24 +85,24 @@
 				'created' : function(evt) {
 					var ctx = evt.layers[3].getContext('2d');
 					ctx.drawImage(player1.image, player1.x * evt.cell.width, player1.y * evt.cell.height);
-					
+
 					// show track
 					//$(evt.layers[1]).css('opacity', 0.8);
 					var trackCtx = evt.layers[1].getContext('2d');
 					trackCtx.drawImage(track.image, 0, 0);
-									
+
 					// show initial moves
 					$(evt.layers[2]).css('opacity', 0.3);
 					highlightCells(evt.layers[2], player1.color, getValidMoves(player1), evt.cell.width, evt.cell.height);
 				},
 				'click' : function(evt) {
-					//console.log(evt.cell.x + ',' + evt.cell.y);
-					
+					console.log('grid click', evt);
+
 					var validMoves = getValidMoves(player1);
 					if (!validMoves.some(function(move) { return move.x == evt.cell.x && move.y == evt.cell.y; })) {
 						return;
 					}
-					
+
 					var canvas = evt.layers[3];
 
 					movePlayer(player1, track, evt.cell, canvas, function() {
@@ -116,7 +122,24 @@
 					var x = evt.mouse.x;
 					var y = evt.mouse.y;
 					console.log(x + ',' + y + ': ' + track.data.data[(y * track.data.width + x) * 4 + 1]);
-				}*/
+				}*/,
+				'keyup' : function(evt) {
+					evt.event.stopPropagation();
+					console.log('grid keyup', evt);
+
+					const keyName = evt.event.originalEvent.code;
+					if (!keyName.startsWith('Numpad')) return;
+
+					const validMoves = getValidMoves(player1);
+					const moveIndex = [7, 8, 9, 4, 5, 6, 1, 2, 3].map(n => 'Numpad' + n).indexOf(keyName);
+					const cell = {...evt.cell, ...validMoves[moveIndex]};
+
+					var canvas = evt.layers[3];
+
+					movePlayer(player1, track, cell, canvas, function() {
+						highlightCells(evt.layers[2], player1.color, getValidMoves(player1), evt.cell.width, evt.cell.height);
+					});
+				}
 			});
 		};
 	</script>
