@@ -1,6 +1,6 @@
 <!--
    gridracer.html
-   
+
    Copyright 2012 Matthijs Wensveen <matthijs@forsite.dk>
    see license.txt for licensing information
 -->
@@ -13,10 +13,10 @@
 		body { font-size: 1em; }
 		label, input { display:block; }
 	</style>
-	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
-	
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="js/jsjac.js"></script>
 	<script type="text/javascript" src="js/jsjac.simpleclient.js"></script>
 	<script type="text/javascript">
@@ -26,16 +26,16 @@
 				quit(connection);
 			}
 		});
-		
+
 		$(function() {
 			$('#screen_game').hide();
-			
+
 			$('button').button();
-			
+
 			$('#create-game').click(function() {
 				$('#dialog-create-game').dialog('open');
 			});
-			
+
 			$('#dialog-create-game').dialog({
 				autoOpen: false,
 				height: 500,
@@ -44,7 +44,7 @@
 				buttons: {
 					'Create game': function() {
 						// TODO: Validate
-						
+
 						var connectionArgs = {
 							httpbase: 'http://cerebro.forsite.dk:5280/http-bind/',
 							timerval: 2000,
@@ -60,7 +60,7 @@
 							register: false,
 							authtype: 'saslanon'
 						}
-						
+
 						connection = connectAndLogin(connectionArgs, loginArgs, {
 							'onconnect': function() {
 								var nickname = $('#player-name').val();
@@ -75,23 +75,23 @@
 									name: nickname,
 									vehicle: $('#player-vehicle').val()
 								};
-								
+
 								// Enter chat room
 								var chatRoom = game.name + '@conference.cerebro.forsite.dk';
-																
+
 								var joinPacket = new JSJaCPresence();
 								joinPacket.setTo(chatRoom + '/' + nickname);
-								
+
 								//Set status in room
 								//joinPacket.setStatus('available');
-								
+
 								joinPacket.appendNode('x', {xmlns: "http://jabber.org/protocol/muc"})
-								
+
 
 								var success = connection.send(joinPacket, function(data) {
 									// todo?
 								});
-								
+
 								if (success) {
 									alert('gaaaame!');
 									sendMsg(connection, chatRoom, JSON.stringify(game), 'groupchat');
@@ -117,7 +117,7 @@
 	<div id="screen_home">
 		<div id="splash"><img src="image/gridracer_splash.png" alt="GRIDRACER"/></div>
 		<button id="create-game">Create game</button>
-		
+
 		<div id="dialog-create-game" title="Create new game">
 			<p class="validateTips">All form fields are required.</p>
 
