@@ -9,6 +9,14 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Gridracer</title>
+	<style>
+		#grid, #stats {
+			float: left;
+		}
+		#grid { width: 1000px; height: 1000px; }
+		#stats { padding: 0 10px; }
+		.stat { padding-left: 5px; }
+	</style>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
 	<script type="text/javascript" src="js/jQuery.grid.js"></script>
 	<script type="text/javascript" src="js/sylvester.js"></script>
@@ -50,8 +58,7 @@
 				initializeTrack(track);
 
 				$(document).on('keyup', evt => {
-					console.log('document keyup', evt);
-
+					// Let the grid know all keyup events
 					$('#grid').trigger(evt);
 				});
 			});
@@ -63,91 +70,37 @@
 		var player1 = {
 			image: new Image(),
 			color: 'red',
-			x: 35,
-			y: 27,
+			position: {
+				x: 35,
+				y: 27
+			},
 			speed: {
 				x: 0,
 				y: 0
 			},
-			moves: [{x: -1, y: -1}, {x: 0, y: -1}, {x: 1, y: -1}, {x: -1, y: 0}, {x: 0, y: 0}, {x: 1, y: 0}, {x: -1, y: 1}, {x: 0, y: 1}, {x: 1, y: 1}]
+			moves: [{x: -1, y: -1}, {x: 0, y: -1}, {x: 1, y: -1}, {x: -1, y: 0}, {x: 0, y: 0}, {x: 1, y: 0}, {x: -1, y: 1}, {x: 0, y: 1}, {x: 1, y: 1}],
+			moveCount: 0,
+			round: 0,
+			checkpoint: null
 		};
 		player1.image.src = 'image/vehicle/racer.png';
-
-		function initializeTrack(track) {
-			var grid = $('#grid').grid(track.width, track.height, {
-				'width' : track.image.width,
-				'height' : track.image.height,
-				'background-color-even' : 'white',
-				'background-color-odd' : 'white',
-				'stroke' : true,
-				'stroke-color' : '#42bbed',
-				'layers' : 4, // grid (obsolete?), track, targets (valid moves), player
-				'created' : function(evt) {
-					var ctx = evt.layers[3].getContext('2d');
-					ctx.drawImage(player1.image, player1.x * evt.cell.width, player1.y * evt.cell.height);
-
-					// show track
-					//$(evt.layers[1]).css('opacity', 0.8);
-					var trackCtx = evt.layers[1].getContext('2d');
-					trackCtx.drawImage(track.image, 0, 0);
-
-					// show initial moves
-					$(evt.layers[2]).css('opacity', 0.3);
-					highlightCells(evt.layers[2], player1.color, getValidMoves(player1), evt.cell.width, evt.cell.height);
-				},
-				'click' : function(evt) {
-					console.log('grid click', evt);
-
-					var validMoves = getValidMoves(player1);
-					if (!validMoves.some(function(move) { return move.x == evt.cell.x && move.y == evt.cell.y; })) {
-						return;
-					}
-
-					var canvas = evt.layers[3];
-
-					movePlayer(player1, track, evt.cell, canvas, function() {
-						highlightCells(evt.layers[2], player1.color, getValidMoves(player1), evt.cell.width, evt.cell.height);
-					});
-				},
-				'mouseenter' : null /*function(evt) {
-					var ctx = evt.layers[3].getContext('2d');
-					ctx.fillStyle = 'blue';
-					ctx.fillRect(evt.cell.width * evt.cell.x, evt.cell.height * evt.cell.y, evt.cell.width, evt.cell.height);
-				}*/,
-				'mouseleave' : null /*function(evt) {
-					var ctx = evt.layers[3].getContext('2d');
-					ctx.clearRect(evt.cell.width * evt.cell.x, evt.cell.height * evt.cell.y, evt.cell.width, evt.cell.height);
-				}*/,
-				'mousemove' : null /*function(evt) {
-					var x = evt.mouse.x;
-					var y = evt.mouse.y;
-					console.log(x + ',' + y + ': ' + track.data.data[(y * track.data.width + x) * 4 + 1]);
-				}*/,
-				'keyup' : function(evt) {
-					evt.event.stopPropagation();
-					console.log('grid keyup', evt);
-
-					const keyName = evt.event.originalEvent.code;
-					if (!keyName.startsWith('Numpad')) return;
-
-					const validMoves = getValidMoves(player1);
-					const moveIndex = [7, 8, 9, 4, 5, 6, 1, 2, 3].map(n => 'Numpad' + n).indexOf(keyName);
-					const cell = {...evt.cell, ...validMoves[moveIndex]};
-
-					var canvas = evt.layers[3];
-
-					movePlayer(player1, track, cell, canvas, function() {
-						highlightCells(evt.layers[2], player1.color, getValidMoves(player1), evt.cell.width, evt.cell.height);
-					});
-				}
-			});
-		};
 	</script>
 </head>
 
 <body>
 	<div id="grid">
 		grid
+	</div>
+	<div id="stats">
+		<div class="player player_1">
+			<img alt="icon"/><br/>
+			<span class="name">player1</span><br/>
+			<table>
+				<tr><td>moves</td><td><span class="stat moveCount">0</span></td></tr>
+				<tr><td>round</td><td><span class="stat round">0</span></td></tr>
+				<tr><td>checkpoint</td><td><span class="stat checkpoint"></span></td></tr>
+			</table>
+		</div>
 	</div>
 </body>
 
