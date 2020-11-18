@@ -1,4 +1,0 @@
-RewriteEngine On
-RewriteRule ^http-bind$  http://cerebro.forsite.dk:5280/http-bind [P]
-
-#ProxyPassReverse /http-bind/ http://cerebro.forsite.dk:5280/http-bind/
