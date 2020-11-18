@@ -15,7 +15,7 @@
 		}
 		#grid { width: 1000px; height: 1000px; }
 		#stats { padding: 0 10px; }
-		.stat { padding-left: 5px; }
+		#stats span { padding-left: 5px; }
 	</style>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
 	<script type="text/javascript" src="js/jQuery.grid.js"></script>
@@ -69,6 +69,7 @@
 
 		var player1 = {
 			image: new Image(),
+			name: 'Player 1',
 			color: 'red',
 			position: {
 				x: 35,
@@ -81,7 +82,7 @@
 			moves: [{x: -1, y: -1}, {x: 0, y: -1}, {x: 1, y: -1}, {x: -1, y: 0}, {x: 0, y: 0}, {x: 1, y: 0}, {x: -1, y: 1}, {x: 0, y: 1}, {x: 1, y: 1}],
 			moveCount: 0,
 			round: 0,
-			checkpoint: null
+			checkpoint: -1
 		};
 		player1.image.src = 'image/vehicle/racer.png';
 	</script>
@@ -93,9 +94,9 @@
 	</div>
 	<div id="stats">
 		<div class="player player_1">
-			<img alt="icon"/><br/>
-			<span class="name">player1</span><br/>
+			<img alt="icon"/><span class="name"></span><br/>
 			<table>
+				<tr><td>speed</td><td><span class="stat speed"></span></td></tr>
 				<tr><td>moves</td><td><span class="stat moveCount">0</span></td></tr>
 				<tr><td>round</td><td><span class="stat round">0</span></td></tr>
 				<tr><td>checkpoint</td><td><span class="stat checkpoint"></span></td></tr>

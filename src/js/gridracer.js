@@ -7,6 +7,10 @@
  */
 
 function initializeTrack(track) {
+	const stats = $('#stats .player');
+	$('img', stats)[0].src = player1.image.src;
+	$('.name', stats).text(player1.name);
+
 	var grid = $('#grid').grid(track.width, track.height, {
 		'width' : track.image.width,
 		'height' : track.image.height,
@@ -199,8 +203,19 @@ function movePlayer(player, track, cell, layers) {
 	const stats = $('#stats .player');
 	$('.stat', stats).each(function() {
 		const stat = Array.from($(this)[0].classList).find(c => c !== 'stat');
-		$(this).text(player[stat]);
-	})
+		const value = player[stat];
+		let stringValue = '';
+		switch (stat) {
+			case "speed":
+				const speed = int(30 * Math.sqrt(value.x ** 2 + value.y ** 2));
+				stringValue = speed >= 100 ? '<strong>' + speed + ' km/h</strong>' : speed + ' km/h';
+				break;
+			default:
+				stringValue = value > -1 ? value : '';
+				break;
+		}
+		$(this).html(stringValue);
+	});
 }
 
 function highlightCells(canvas, color, cells, cellWidth, cellHeight) {
