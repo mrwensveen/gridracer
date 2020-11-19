@@ -93,7 +93,7 @@ class Transform {
 
 	getTransformedPoint(x, y) {
 		var point = this.m.multiply($V([x, y, 1]));
-		return [point.e(1), point.e(2)];
+		return $V([point.e(1), point.e(2), 0]);
 	}
 }
 

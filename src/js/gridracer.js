@@ -28,6 +28,7 @@ function initializeTrack(track) {
 			var trackCtx = evt.layers[1].getContext('2d');
 			trackCtx.drawImage(track.image, 0, 0);
 
+			// XXX: Debug checkpoint lines
 			trackCtx.save();
 			trackCtx.strokeStyle = 'blue';
 			track.checkpoints.forEach(checkpoint => {
@@ -142,7 +143,7 @@ function movePlayer(player, track, cell, layers) {
 		var top = int(0 - d - cell.height / 2);
 
 		var collisionPoint = transform.getTransformedPoint(0, top);
-		var pixel = getPixelValue(track.data.data, track.data.width, int(collisionPoint[0]), int(collisionPoint[1]));
+		var pixel = getPixelValue(track.data.data, track.data.width, int(collisionPoint.e(1)), int(collisionPoint.e(2)));
 
 		if (pixel !== 0) {
 			// Collision!
@@ -153,19 +154,37 @@ function movePlayer(player, track, cell, layers) {
 		d++;
 	}
 
-	if (collision) {
-		// get coordinates of the center of the player
-		var playerPoint = transform.getTransformedPoint(0, int(0 - d));
+	// get target coordinates of the center of the player
+	const playerOrigin = transform.getTransformedPoint(0, 0);
+	const playerTarget = transform.getTransformedPoint(0, int(0 - d));
+	const playerLine = $L(playerOrigin, playerTarget.subtract(playerOrigin));
+	playerLine.target = playerTarget;
 
-		player.speed = { x: 0, y: 0 };
-		player.position = {
-			x: int(playerPoint[0] / cell.width),
-			y: int(playerPoint[1] / cell.height)
-		}
-	} else {
-		player.speed = { x: dx, y: dy };
-		player.position = { ...cell }
+	// Set the target position (cell coordinates) and speed
+	player.speed = collision ? { x: 0, y: 0 } : { x: dx, y: dy };
+	player.position = {
+		x: int(playerTarget.e(1) / cell.width),
+		y: int(playerTarget.e(2) / cell.height)
 	}
+
+	// Does the player cross any checkpoint lines?
+	track.checkpoints.forEach((checkpoint, index) => {
+		// Only check if this is the next checkpoint for the player
+		if (index === (player.checkpoint + 1) % track.checkpoints.length) {
+			if (!checkpoint.line) {
+				checkpoint.line = $L(
+					[checkpoint.from.x, checkpoint.from.y],
+					[checkpoint.to.x - checkpoint.from.x, checkpoint.to.y - checkpoint.from.y]
+				);
+				checkpoint.line.target = $V([checkpoint.to.x, checkpoint.to.y, 0]);
+			}
+
+			// Does the playerLine intersect with the checkpoint's line?
+			if (doLineSegmentsIntersect(playerLine, checkpoint.line)) {
+				player.checkpoint = index;
+			}
+		}
+	});
 
 	function complete() {
 		highlightCells(layers[2], player.color, getValidMoves(player), cell.width, cell.height);
@@ -234,6 +253,19 @@ function highlightCells(canvas, color, cells, cellWidth, cellHeight) {
 	}
 }
 
+function doLineSegmentsIntersect(line1, line2) {
+	const intersectPoint = line1.intersectionWith(line2);
+
+	if (intersectPoint) {
+		return between(intersectPoint.e(1), line1.anchor.e(1), line1.target.e(1))
+			&& between(intersectPoint.e(2), line1.anchor.e(2), line1.target.e(2))
+			&& between(intersectPoint.e(1), line2.anchor.e(1), line2.target.e(1))
+			&& between(intersectPoint.e(2), line1.anchor.e(2), line1.target.e(2));
+	}
+
+	return false;
+}
+
 function getPixelValue(pixels, width, x, y) {
 	var offset = (y * width + x) * 4;
 	return  pixels[offset]     << 24 |
@@ -245,4 +277,10 @@ function getPixelValue(pixels, width, x, y) {
 function int(x) {
 	// bitwise OR with 0 to get the int part
 	return x | 0;
+}
+
+function between(value, a, b) {
+	const min = Math.min(a, b);
+	const max = Math.max(a, b);
+  return value >= min && value <= max;
 }
