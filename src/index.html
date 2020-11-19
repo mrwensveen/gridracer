@@ -1,114 +1,72 @@
-<!--
-   gridracer.html
-
-   Copyright 2012 Matthijs Wensveen <matthijs@forsite.dk>
-   see license.txt for licensing information
--->
 <!DOCTYPE html>
 <html>
-
 <head>
+	<meta charset="UTF-8">
 	<title>GRIDRACER</title>
 	<style>
 		body { font-size: 1em; }
-		label, input { display:block; }
 	</style>
 	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-	<script type="text/javascript" src="js/jsjac.js"></script>
-	<script type="text/javascript" src="js/jsjac.simpleclient.js"></script>
-	<script type="text/javascript">
-		var connection;
-		$(window).unload(function() {
-			if (connection !== null) {
-				quit(connection);
-			}
-		});
+	<script type="module">
+		import * as utils from './js/utils.js';
 
 		$(function() {
-			$('#screen_game').hide();
+			$.getJSON('track/tracks.json', function(tracks) {
+
+			});
 
 			$('button').button();
 
 			$('#create-game').click(function() {
+				setGameName(utils.randomGameName());
+
 				$('#dialog-create-game').dialog('open');
 			});
 
 			$('#dialog-create-game').dialog({
 				autoOpen: false,
-				height: 500,
-				width: 500,
+				height: 850,
+				width: 600,
 				modal: true,
 				buttons: {
 					'Create game': function() {
-						// TODO: Validate
+						var game = {
+							name: $('#game-name').val(),
+							track: $('input[name=game-track]').val(),
+							rounds: $('input[name=game-rounds]').val()
+						};
+						var player = {
+							name: $('input[name=player-name]').val(),
+							vehicle: $('input[name=player-vehicle]').val()
+						};
 
-						var connectionArgs = {
-							httpbase: 'http://cerebro.forsite.dk:5280/http-bind/',
-							timerval: 2000,
-							backend: 'binding'
-						}
-
-						var loginArgs = {
-							domain: 'cerebro.forsite.dk',
-							username: $('#player-name').val(),
-							alias: $('#player-name').val(),
-							resource: 'Gridracer',
-							pass: '',
-							register: false,
-							authtype: 'saslanon'
-						}
-
-						connection = connectAndLogin(connectionArgs, loginArgs, {
-							'onconnect': function() {
-								var nickname = $('#player-name').val();
-								var game = {
-									type: 'game',
-									name: 'game', // TODO: generate random string
-									track: $('#game-track').val(),
-									players: {}
-								};
-								game.players[connection.fulljid] = {
-									type: 'player',
-									name: nickname,
-									vehicle: $('#player-vehicle').val()
-								};
-
-								// Enter chat room
-								var chatRoom = game.name + '@conference.cerebro.forsite.dk';
-
-								var joinPacket = new JSJaCPresence();
-								joinPacket.setTo(chatRoom + '/' + nickname);
-
-								//Set status in room
-								//joinPacket.setStatus('available');
-
-								joinPacket.appendNode('x', {xmlns: "http://jabber.org/protocol/muc"})
-
-
-								var success = connection.send(joinPacket, function(data) {
-									// todo?
-								});
-
-								if (success) {
-									alert('gaaaame!');
-									sendMsg(connection, chatRoom, JSON.stringify(game), 'groupchat');
-								} else {
-									alert('no gaaaame!');
-								}
-							}
-						});
+						window.sessionStorage.setItem('settings', { game, player });
+						window.location.assign(new URL('gridracer.html#' + game.name, window.location.href).href);
 					},
 					Cancel: function() {
-						$( this ).dialog('close');
+						$(this).dialog('close');
 					}
 				},
 				close: function() {
 					//allFields.val('').removeClass('ui-state-error');
 				}
 			});
+
+			function setGameName(gameName) {
+				$('#game-name').val(gameName);
+				$('#game-link').val(new URL('#' + gameName, window.location).href);
+			}
+
+			$(window).on('hashchange', function () {
+				setGameName(window.location.hash.substr(1));
+			});
+
+			if (window.location.hash) {
+				setGameName(window.location.hash.substr(1));
+			}
 		});
 	</script>
 </head>
@@ -124,9 +82,22 @@
 			<form>
 				<fieldset>
 					<legend>Game</legend>
-					<label for="game-track">Track</label>
-					TODO: List tracks in track/tracks.json and show thumbnails
+					<h4>Track</h4>
+					<label><img src="track/track1.png" height="80"/><input type="radio" name="game-track" value="0"></label>
+					<label><img src="track/infinity.jpg" height="80"/><input type="radio" name="game-track" value="1"></label>
+					<h4>Rounds</h4>
+					<input name="game-rounds" type="number" value="3" size="3"/>
 				</fieldset>
+				<fieldset>
+					<legend>Player</legend>
+					<h4>Name</h4>
+					<input type="text" name="player-name" placeholder="Player name"/>
+					<h4>Car</h4>
+					<label><img src="image/vehicle/racer.png" height="20"/><input type="radio" name="player-vehicle" value="0"></label>
+					<label><img src="image/vehicle/ufo.png" height="20"/><input type="radio" name="player-vehicle" value="1"></label>
+				</fieldset>
+				<p>Shareable link: <input id="game-link" value="" size="50"/></p>
+				<input type="hidden" id="game-name" value="" />
 			</form>
 		</div>
 	</div>

@@ -1,9 +1,3 @@
-<!--
-   gridracer.html
-
-   Copyright 2012 Matthijs Wensveen <matthijs@forsite.dk>
-   see license.txt for licensing information
--->
 <!DOCTYPE html>
 <html>
 <head>
@@ -17,12 +11,22 @@
 		#stats { padding: 0 10px; }
 		#stats span { padding-left: 5px; }
 	</style>
+	<script>
+		const SOCKET_SERVER = `${window.location.protocol}//${window.location.hostname}:8181`;
+
+		{
+			const socketScriptElement = document.createElement('script');
+			socketScriptElement.setAttribute('src', `${SOCKET_SERVER}/socket.io/socket.io.js`);
+			document.head.appendChild(socketScriptElement);
+		}
+	</script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
 	<script type="text/javascript" src="js/jQuery.grid.js"></script>
 	<script type="text/javascript" src="js/sylvester.js"></script>
 	<script type="text/javascript" src="js/transform.js"></script>
-	<script type="text/javascript" src="js/gridracer.js"></script>
-	<script type="text/javascript">
+	<script type="module">
+		import initializeTrack from './js/gridracer.js';
+
 		$.getJSON('track/tracks.json', function(tracks) {
 			var canvas = document.createElement('canvas');
 			var ctx = canvas.getContext('2d');
@@ -55,7 +59,7 @@
 					});
 				}).promise()
 			).then(function() {
-				initializeTrack(track);
+				initializeTrack(track, [player1]);
 
 				$(document).on('keyup', evt => {
 					// Let the grid know all keyup events

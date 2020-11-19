@@ -1,12 +1,8 @@
-/*
- * gridracer.js
- *
- * Copyright 2012 Matthijs Wensveen <matthijs@forsite.dk>
- * see license.txt for licensing information
- *
- */
+import * as utils from './utils.js';
 
-function initializeTrack(track) {
+export default function initializeTrack(track, players) {
+	const player1 = players[0];
+
 	const stats = $('#stats .player');
 	$('img', stats)[0].src = player1.image.src;
 	$('.name', stats).text(player1.name);
@@ -137,10 +133,10 @@ function movePlayer(player, track, cell, layers) {
 	var collision = false;
 	var d = 0;
 	while (d <= dist) {
-		var top = int(0 - d - cell.height / 2);
+		var top = utils.int(0 - d - cell.height / 2);
 
 		var collisionPoint = transform.getTransformedPoint(0, top);
-		var pixel = getPixelValue(track.data.data, track.data.width, int(collisionPoint.e(1)), int(collisionPoint.e(2)));
+		var pixel = getPixelValue(track.data.data, track.data.width, utils.int(collisionPoint.e(1)), utils.int(collisionPoint.e(2)));
 
 		if (pixel !== 0) {
 			// Collision!
@@ -153,15 +149,15 @@ function movePlayer(player, track, cell, layers) {
 
 	// get target coordinates of the center of the player
 	const playerOrigin = transform.getTransformedPoint(0, 0);
-	const playerTarget = transform.getTransformedPoint(0, int(0 - d));
+	const playerTarget = transform.getTransformedPoint(0, utils.int(0 - d));
 	const playerLine = $L(playerOrigin, playerTarget.subtract(playerOrigin));
 	playerLine.target = playerTarget;
 
 	// Set the target position (cell coordinates) and speed
 	player.speed = collision ? { x: 0, y: 0 } : { x: dx, y: dy };
 	player.position = {
-		x: int(playerTarget.e(1) / cell.width),
-		y: int(playerTarget.e(2) / cell.height)
+		x: utils.int(playerTarget.e(1) / cell.width),
+		y: utils.int(playerTarget.e(2) / cell.height)
 	}
 
 	// Does the player cross any checkpoint lines?
@@ -226,7 +222,7 @@ function movePlayer(player, track, cell, layers) {
 		let stringValue = '';
 		switch (stat) {
 			case "speed":
-				const speed = int(30 * Math.sqrt(value.x ** 2 + value.y ** 2));
+				const speed = utils.int(30 * Math.sqrt(value.x ** 2 + value.y ** 2));
 				stringValue = speed >= 100 ? '<strong>' + speed + ' km/h</strong>' : speed + ' km/h';
 				break;
 			default:
@@ -257,10 +253,10 @@ function doLineSegmentsIntersect(line1, line2) {
 	const intersectPoint = line1.intersectionWith(line2);
 
 	if (intersectPoint) {
-		return between(intersectPoint.e(1), line1.anchor.e(1), line1.target.e(1))
-			&& between(intersectPoint.e(2), line1.anchor.e(2), line1.target.e(2))
-			&& between(intersectPoint.e(1), line2.anchor.e(1), line2.target.e(1))
-			&& between(intersectPoint.e(2), line1.anchor.e(2), line1.target.e(2));
+		return utils.between(intersectPoint.e(1), line1.anchor.e(1), line1.target.e(1))
+			&& utils.between(intersectPoint.e(2), line1.anchor.e(2), line1.target.e(2))
+			&& utils.between(intersectPoint.e(1), line2.anchor.e(1), line2.target.e(1))
+			&& utils.between(intersectPoint.e(2), line1.anchor.e(2), line1.target.e(2));
 	}
 
 	return false;
@@ -272,15 +268,4 @@ function getPixelValue(pixels, width, x, y) {
 			pixels[offset + 1] << 16 |
 			pixels[offset + 2] <<  8 |
 			pixels[offset + 3];
-}
-
-function int(x) {
-	// bitwise OR with 0 to get the int part
-	return x | 0;
-}
-
-function between(value, a, b) {
-	const min = Math.min(a, b);
-	const max = Math.max(a, b);
-  return value >= min && value <= max;
 }
