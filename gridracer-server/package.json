@@ -1,0 +1,8 @@
+{
+  "name": "gridracer-server",
+  "version": "0.0.1",
+  "description": "Gridracer socket.io app",
+  "dependencies": {
+    "socket.io": "^3.0.1"
+  }
+}
