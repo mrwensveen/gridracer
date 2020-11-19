@@ -1,0 +1,23 @@
+version: "2"
+services:
+  gridracer-client:
+    image: nginx:latest
+    ports:
+      - "8180:80"
+    volumes:
+      - ./src:/usr/share/nginx/html
+    restart: always
+
+  gridracer-server:
+    image: "node:latest"
+    user: "node"
+    working_dir: /home/node/app
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./gridracer-server:/home/node/app
+    ports:
+      - "8181:8181"
+    tty: yes
+    #command: "npm start"
+    #restart: always
