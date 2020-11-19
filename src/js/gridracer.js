@@ -28,16 +28,16 @@ function initializeTrack(track) {
 			var trackCtx = evt.layers[1].getContext('2d');
 			trackCtx.drawImage(track.image, 0, 0);
 
-			// XXX: Debug checkpoint lines
-			trackCtx.save();
-			trackCtx.strokeStyle = 'blue';
-			track.checkpoints.forEach(checkpoint => {
-				trackCtx.beginPath();
-				trackCtx.moveTo(checkpoint.from.x, checkpoint.from.y);
-				trackCtx.lineTo(checkpoint.to.x, checkpoint.to.y);
-				trackCtx.stroke();
-			});
-			trackCtx.restore();
+			// Debug checkpoint lines
+			// trackCtx.save();
+			// trackCtx.strokeStyle = 'blue';
+			// track.checkpoints.forEach(checkpoint => {
+			// 	trackCtx.beginPath();
+			// 	trackCtx.moveTo(checkpoint.from.x, checkpoint.from.y);
+			// 	trackCtx.lineTo(checkpoint.to.x, checkpoint.to.y);
+			// 	trackCtx.stroke();
+			// });
+			// trackCtx.restore();
 
 			// show initial moves
 			$(evt.layers[2]).css('opacity', 0.3);
@@ -119,9 +119,6 @@ function movePlayer(player, track, cell, layers) {
 	var dx_px = dx * cell.width;
 	var dy_px = dy * cell.height;
 
-
-	// TODO: detect checkpoints
-
 	transform.save();
 
 	// Move to the center of the starting cell
@@ -182,6 +179,9 @@ function movePlayer(player, track, cell, layers) {
 			// Does the playerLine intersect with the checkpoint's line?
 			if (doLineSegmentsIntersect(playerLine, checkpoint.line)) {
 				player.checkpoint = index;
+				if (player.checkpoint === 0) {
+					player.round++;
+				}
 			}
 		}
 	});
